@@ -1,0 +1,41 @@
+function init(self)
+	self.red_circle = gui.get_node("red_circle")
+	self.blue_circle = gui.get_node("blue_circle")
+	self.red_text = gui.get_node("red_text")
+	self.blue_text = gui.get_node("blue_text")
+
+	self.cur_blue_text = 0
+	self.cur_red_text = 0
+
+	gui.set_color(self.blue_circle, vmath.vector4(0.2, 0.6, 1, 1))
+	gui.set_color(self.red_circle, vmath.vector4(1, 0.5, 0.5, 1))
+	self.default_scale = gui.get_scale(self.red_text)
+end
+
+local function animation_complete()
+	msg.post("game_controller#game_controller", "score_calculated")
+end
+
+local function grow1(self)
+	gui.animate(self.blue_text, gui.PROP_SCALE, self.default_scale, gui.EASING_OUTEXPO, 0.1, 0.15, animation_complete)
+	gui.animate(self.red_text, gui.PROP_SCALE, self.default_scale, gui.EASING_OUTEXPO, 0.1, 0.15)
+end
+
+local function grow(self)
+	gui.animate(self.blue_text, gui.PROP_SCALE, self.default_scale * 1.2, gui.EASING_INEXPO, 0.1, 0, grow1)
+	gui.animate(self.red_text, gui.PROP_SCALE, self.default_scale * 1.2, gui.EASING_INEXPO, 0.1, 0, grow1)
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("update_score") then
+		self.blue_score = message.blue_score
+		self.red_score = message.red_score
+	end
+
+	if message_id == hash("animate_score") then
+		gui.set_text(self.blue_text, self.blue_score)
+		gui.set_text(self.red_text, self.red_score)
+		self.color = message.color
+		grow(self)
+	end
+end

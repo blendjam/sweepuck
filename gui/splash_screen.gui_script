@@ -1,0 +1,38 @@
+BYPASS_SPLASH = false
+
+local function on_splash_complete(self)
+	msg.post(".", "disable")
+end
+
+
+local function splash_fade_out(self)
+	-- msg.post("/controller#main_controller", "splash_complete")
+	local to_color = gui.get_color(self.bhoos_logo)
+	to_color.w = 0
+	gui.animate(self.bhoos_logo, gui.PROP_COLOR, to_color, gui.EASING_INOUTEXPO, 0.5, 0.5, on_splash_complete)
+end
+
+local function animateLogo(self)
+	local d = 0.75
+	local start_scale = 0.08
+	local target_scale = gui.get_scale(self.bhoos_logo)
+	gui.set_scale(self.bhoos_logo, vmath.vector4(start_scale, start_scale, start_scale, 0))
+
+	local from_color = gui.get_color(self.bhoos_logo)
+	local to_color = gui.get_color(self.bhoos_logo)
+	from_color.w = 0
+	gui.set_color(self.bhoos_logo, from_color)
+
+	-- animate the alpha to 1
+	gui.animate(self.bhoos_logo, gui.PROP_COLOR, to_color, gui.EASING_INOUTEXPO, 0.3)
+
+	-- Animate the scale up to 135%
+	gui.animate(self.bhoos_logo, gui.PROP_SCALE, target_scale, gui.EASING_INEXPO, 0.5, 0, splash_fade_out)
+end
+
+function init(self)
+	self.bhoos_logo    = gui.get_node("bhoos_logo")
+	self.splash_screen = gui.get_node("splash_screen")
+	gui.set_enabled(self.splash_screen, true)
+	animateLogo(self)
+end

@@ -1,0 +1,90 @@
+require("main.helper_func")
+
+go.property("player_id", 0)
+go.property("force_amplitude", 15)
+
+function init(self)
+	msg.post(".", "acquire_input_focus")
+	self.force = 0
+	self.throw_velocity = vmath.vector3()
+	self.has_touched = false
+	self.can_spawn = true
+	self.can_throw = true
+	self.is_holding = false
+	self.touch_pos = vmath.vector3()
+
+	if self.player_id == 1 then
+		msg.post("#sprite", "play_animation", { id = hash("Red_Goti") })
+	end
+
+	local initial_scale = go.get_scale()
+	go.set(".", "scale", vmath.vector3())
+	go.animate(".", "scale", go.PLAYBACK_ONCE_FORWARD, initial_scale, go.EASING_OUTBACK, 0.8)
+end
+
+function fixed_update(self, dt)
+	local l_vel = go.get("#co", "linear_velocity")
+
+	-- Debug Text
+	-- label.set_text("#force_label", math.floor(vmath.length(l_vel)))
+	-- label.set_text("#score", math.floor(get_distance_from_target()))
+
+	if self.can_spawn and vmath.length(l_vel) > 0 and vmath.length(l_vel) < 10 then
+		msg.post(".", "release_input_focus")
+		msg.post("/game_controller#game_controller", "puck_stopped")
+		self.can_spawn = false
+	end
+
+	-- if self.is_holding then
+	-- 	local initial_touch_world_position = screen_to_world(self.d0.x, self.d0.y, 0, "camera_ctrl#camera")
+	-- 	self.y_delta = math.abs(initial_touch_world_position.y - self.touch_pos.y)
+
+	-- 	if self.y_delta < 30 then
+	-- 		print(self.y_delta)
+	-- 		local target_position = go.get_position()
+	-- 		target_position.x = self.touch_pos.x
+	-- 		go.set_position(target_position)
+	-- 	end
+	-- end
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("trigger_response") and message.other_id == hash("/end_line") then
+		msg.post("/game_controller/#game_controller", "puck_stopped")
+		go.delete()
+	end
+end
+
+function on_input(self, action_id, action)
+	if self.can_throw and action_id == hash("touch") then
+		self.touch_pos = screen_to_world(action.x, action.y, 0, "/camera_ctrl#camera")
+		local dist = vmath.length(self.touch_pos - go.get_position())
+		local puck_size = go.get("#sprite", "size.x") * go.get_scale().x
+
+		if dist < puck_size / 1.5 and action.pressed then
+			self.d0 = vmath.vector3(action.x, action.y, 0)
+			self.t0 = socket.gettime()
+			self.has_touched = true
+			self.is_holding = true
+		end
+
+		if action.released and self.has_touched then
+			local t1 = socket.gettime()
+			local d1 = vmath.vector3(action.x, action.y, 0)
+			local time_interval = t1 - self.t0
+			local direction = d1 - self.d0
+			local force = direction / time_interval
+			self.is_holding = false
+			self.touch_time = 0
+
+			if (force.y > 100) then
+				if force.y > 10000 then
+					force.y = 10000
+				end
+				msg.post("#co", "apply_force", { force = force * self.force_amplitude, position = go.get_world_position() })
+				self.has_touched = false
+				self.can_throw = false
+			end
+		end
+	end
+end

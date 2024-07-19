@@ -1,0 +1,39 @@
+IGNORE_SPLASH = false
+
+function init(self)
+	if IGNORE_SPLASH then
+		msg.post("/splash_screen", "disable")
+	end
+
+	msg.post(".", "acquire_input_focus")
+	self.button1 = gui.get_node("mode1/button")
+	self.button2 = gui.get_node("mode2/button")
+end
+
+function on_input(self, action_id, action)
+	if action_id == hash("touch") and gui.pick_node(self.button1, action.x, action.y) then
+		if action.pressed then
+			gui.play_flipbook(self.button1, "button_pressed")
+		elseif action.released then
+			gui.play_flipbook(self.button1, "button_normal")
+			msg.post("#level1_proxy", "load")
+		end
+	end
+
+	if action_id == hash("touch") and gui.pick_node(self.button2, action.x, action.y) then
+		if action.pressed then
+			gui.play_flipbook(self.button2, "button_pressed")
+		elseif action.released then
+			gui.play_flipbook(self.button2, "button_normal")
+			msg.post("#level2_proxy", "load")
+		end
+	end
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("proxy_loaded") then
+		msg.post("#", "disable")
+		msg.post(sender, "init")
+		msg.post(sender, "enable")
+	end
+end

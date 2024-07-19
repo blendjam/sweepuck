@@ -1,0 +1,21 @@
+go.property("puck_scale", 0.06)
+local global = require("main.global_variables")
+
+function spawn_puck(self)
+	local spwan_position = go.get_world_position()
+
+	local props          = {}
+	props[hash("/puck")] = { player_id = global.turn }
+	local col_scale      = vmath.vector3(1, 1, 1) * self.puck_scale
+	local col_ids        = collectionfactory.create("#puck_factory", spwan_position, nil, props, col_scale)
+
+
+	local puck_id = col_ids[hash("/puck")]
+	msg.post("/game_controller#game_controller", "puck_spawned", { new_puck = puck_id, turn = global.turn })
+end
+
+function on_message(self, message_id, message, sender)
+	if message_id == hash("spawn_puck") then
+		spawn_puck(self)
+	end
+end

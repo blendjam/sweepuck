@@ -1,0 +1,16 @@
+key_trigger {
+  input: KEY_SPACE
+  action: "shoot"
+}
+key_trigger {
+  input: KEY_R
+  action: "restart"
+}
+mouse_trigger {
+  input: MOUSE_BUTTON_1
+  action: "touch"
+}
+touch_trigger {
+  input: TOUCH_MULTI
+  action: "multi_touch"
+}

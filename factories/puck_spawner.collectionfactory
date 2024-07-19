@@ -1,0 +1,3 @@
+prototype: "/puck/puck.collection"
+load_dynamically: false
+dynamic_prototype: false

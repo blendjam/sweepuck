@@ -1,0 +1,22 @@
+[bootstrap]
+main_collection = /main/main.collectionc
+
+[script]
+shared_state = 1
+
+[display]
+width = 540
+height = 960
+vsync = 0
+
+[android]
+input_method = HiddenInputField
+
+[project]
+title = sweepuck
+dependencies#0 = https://github.com/britzl/defold-input/archive/4.6.2.zip
+
+[physics]
+gravity_y = 0.0
+scale = 0.01
+
